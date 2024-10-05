@@ -1,5 +1,8 @@
 Flask==2.3.2
 Flask-Bcrypt==1.0.1
+Flask-Cors==5.0.0
+Flask-Login==0.6.3
 Flask-SQLAlchemy==3.0.3
-psycopg2-binary==2.9.6  # PostgreSQL driver
 Flask-Migrate==4.0.4
+psycopg2-binary==2.9.6  # PostgreSQL driver
+PyJWT==2.9.0

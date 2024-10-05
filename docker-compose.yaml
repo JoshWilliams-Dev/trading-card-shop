@@ -6,28 +6,67 @@ services:
       - "5000:5000"
     volumes:
       - ./backend:/app
+    networks:
+      - app-network
     environment:
       POSTGRES_USER: trading_cards_db_user
       POSTGRES_PASSWORD: magic-pokemon-yu-gi-oh-3471
       POSTGRES_DB: trading_cards_db
     depends_on:
-      - db
+      - postgres-db
 
   frontend:
     build: ./frontend
+    depends_on:
+      - backend
     ports:
       - "3000:3000"
     volumes:
       - ./frontend:/app
+    command: npm start
+    networks:
+      - app-network
+    environment:
+       - WATCHPACK_POLLING=true
+       - REACT_APP_BACKEND_URL=http://localhost:5000
+    develop:
+      watch:
+        - action: sync
+          path: ./src
+          target: /src/src
+          ignore:
+            - node_modules/
+        - action: rebuild
+          path: package.json
 
-  db:
+  postgres-db:
     image: postgres:13
     environment:
       POSTGRES_USER: trading_cards_db_user
       POSTGRES_PASSWORD: magic-pokemon-yu-gi-oh-3471
       POSTGRES_DB: trading_cards_db
+    networks:
+      - app-network
+    ports:
+      - "5532:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      
+      
+  pgadmin:
+    image: dpage/pgadmin4
+    depends_on:
+      - postgres-db
+    ports:
+      - "5555:80"
+    environment:
+      PGADMIN_DEFAULT_EMAIL: pgadmin4@pgadmin.org
+      PGADMIN_DEFAULT_PASSWORD: admin
+
+
+networks:
+  app-network:
+    driver: bridge
 
 volumes:
   postgres_data:

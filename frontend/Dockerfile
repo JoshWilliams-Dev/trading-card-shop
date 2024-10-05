@@ -20,7 +20,9 @@ RUN npm run build
 
 # Serve the built app using a lightweight web server
 RUN npm install -g serve
-CMD ["serve", "-s", "build"]
 
 # Expose port 3000
 EXPOSE 3000
+
+# Start the React app
+CMD ["serve", "-s", "build"]
