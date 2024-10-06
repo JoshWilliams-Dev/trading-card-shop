@@ -3,9 +3,14 @@ from flask_login import UserMixin
 
 
 class User(db.Model, UserMixin):
+    __tablename__ = 'Users'
+    EMAIL_MAX_LENGTH = 254
+    DISPLAY_NAME_MAX_LENGTH = 50
+
     id = db.Column(db.Integer, primary_key=True)
-    email = db.Column(db.String(254), unique=True, nullable=False)
+    email = db.Column(db.String(EMAIL_MAX_LENGTH), unique=True, nullable=False)
     password_hash = db.Column(db.String(128), nullable=False)
+    display_name = db.Column(db.String(DISPLAY_NAME_MAX_LENGTH), nullable=False)
 
     def set_password(self, password):
         # Bcrypt includes a salt when creating the hash

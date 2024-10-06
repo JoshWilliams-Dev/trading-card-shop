@@ -5,6 +5,7 @@ from flask_login import login_user, current_user
 import jwt
 
 from app.models import User
+from app.validation import ApiRequestValidator
 from . import db, login_manager
 
 authentication_blueprint = Blueprint('authentication', __name__)
@@ -73,29 +74,64 @@ def protected_route():
 def register():
     data = request.get_json()
 
-    # Validate input
-    email = data.get('email')
-    password = data.get('password')
-    if not email or not password:
-        return jsonify({'error': 'Email and password are required'}), 400
-        
-    password_meets_minimum_requirements, validate_password_minimum_requirements_message = validate_password_minimum_requirements(password)
-    if not password_meets_minimum_requirements:
-        return jsonify({'error': validate_password_minimum_requirements_message}), 400
+    # Validate parameters
+    errors = []
+    validator = ApiRequestValidator()
 
-    # Check if user already exists
-    user = User.query.filter_by(email=email).first()
-    if user:
-        return jsonify({'error': 'User already exists'}), 400
+
+    email = data.get('email')
+    if validator.ensure_value_provided ('email', email) and validator.ensure_is_string('email', email):
+        validator.ensure_email_format('email', email)
+        validator.ensure_string_max_length('email', email, User.EMAIL_MAX_LENGTH)
+
+        if validator.get_error_count() < 1:
+            user = User.query.filter_by(email=email).first()
+            if user:
+                validator.add_parameter_error('The email is already in use.', 'email')
+
+
+    password = data.get('password')
+    if validator.ensure_value_provided ('password', password) and validator.ensure_is_string('password', password):
+        password_meets_minimum_requirements, validate_password_minimum_requirements_message = validate_password_minimum_requirements(password)
+        if not password_meets_minimum_requirements:
+            validator.add_parameter_error(validate_password_minimum_requirements_message, 'password')
+
+
+    display_name = data.get('display_name')
+    if validator.ensure_value_provided ('display_name', display_name) and validator.ensure_is_string('display_name', display_name):
+        validator.ensure_string_max_length('display_name', display_name, User.DISPLAY_NAME_MAX_LENGTH)
+    
+    
+    if validator.get_error_count() > 0:
+        return jsonify(validator.get_error_object()), 400
+    
 
     # Create a new user
-    new_user = User(email=email)
+    new_user = User(email=email,display_name=display_name)
     new_user.set_password(password)
     
     db.session.add(new_user)
     db.session.commit()
 
-    return jsonify({'message': 'User registered successfully'}), 201
+    saved_user = User.query.filter_by(email=email).first()
+
+    login_response = login_user_and_get_token(saved_user)
+    login_response['message'] = "User registered successfully"
+
+    return jsonify(login_response), 201
+
+
+def login_user_and_get_token(user):
+    login_user(user)
+
+    token = jwt.encode({
+        'user_id': user.id,
+        'exp': datetime.now(timezone.utc) + JWT_EXPIRATION_DELTA
+    }, JWT_SECRET, algorithm='HS256')
+
+    return {
+        "token": token
+    }
 
 
 
@@ -110,15 +146,7 @@ def authenticate():
 
     user = User.query.filter_by(email=email).first()
     if user and user.check_password(password):
-        login_user(user)
-
-        token = jwt.encode({
-            'user_id': user.id,
-            'exp': datetime.now(timezone.utc) + JWT_EXPIRATION_DELTA
-        }, JWT_SECRET, algorithm='HS256')
-
-        return jsonify({
-            "token": token
-        }), 200
+        login_response = login_user_and_get_token(user)
+        return jsonify(login_response), 200
     else:
         return jsonify({"message": "Invalid email or password."}), 401
