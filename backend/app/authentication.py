@@ -1,22 +1,61 @@
 from datetime import datetime, timedelta, timezone
 import re
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, jsonify, request, make_response
 from flask_login import login_user, current_user
 import jwt
 
-from app.models import User
+from app.models import User, UserToken
 from app.validation import ApiRequestValidator
 from . import db, login_manager
 
 authentication_blueprint = Blueprint('authentication', __name__)
 
 JWT_SECRET = 'In Magic: The Gathering, planeswalkers are powerful mages who can travel between different planes of existence. The Multiverse is home to countless worlds, from Dominaria, a land rich in history, to Ravnica, a city-wide plane ruled by ten powerful guilds.'
-JWT_EXPIRATION_DELTA = timedelta(minutes=5)  # Token expires in 1 hour
+JWT_ALGORITHM = 'HS256'
+ACCESS_TOKEN_EXPIRATION_DELTA = timedelta(minutes=15)
+REFRESH_TOKEN_EXPIRATION_DELTA = timedelta(days=1)
 
 
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))  # Get the user by their ID from the database
+
+
+def create_access_token(user_id):
+    expiration = datetime.now(timezone.utc) + ACCESS_TOKEN_EXPIRATION_DELTA
+    return jwt.encode({'user_id': user_id, 'exp': expiration}, JWT_SECRET, algorithm=JWT_ALGORITHM), expiration
+
+
+def create_refresh_token(user_id):
+    expiration = datetime.now(timezone.utc) + REFRESH_TOKEN_EXPIRATION_DELTA
+    return jwt.encode({'user_id': user_id, 'exp': expiration}, JWT_SECRET, algorithm=JWT_ALGORITHM), expiration
+
+
+
+def create_logged_in_user_response(user):
+    login_user(user)
+
+    # Issue both access and refresh tokens
+    access_token, access_token_expires = create_access_token(user.id)
+    refresh_token, refresh_token_expires = create_refresh_token(user.id)
+
+    new_user_token = UserToken(
+        user_id=user.id,
+        refresh_token=refresh_token,
+        access_token_expires=access_token_expires,
+        refresh_token_expires=refresh_token_expires
+    )
+    db.session.add(new_user_token)
+    db.session.commit()
+
+    return jsonify({
+        'access_token': access_token,
+        'access_token_expires': access_token_expires.timestamp(),
+        'refresh_token': refresh_token,
+        'refresh_token_expires': refresh_token_expires.timestamp(),
+    })
+
+    
 
 
 def token_required(f):
@@ -47,20 +86,6 @@ def validate_password_minimum_requirements(password):
     if not re.search(r'[A-Z]', password):
         return False, "Password must contain at least one uppercase letter."
     return True, ""
-
-
-
-@authentication_blueprint.route('/login')
-def login():
-    return 'Login'
-
-@authentication_blueprint.route('/signup')
-def signup():
-    return 'Signup'
-
-@authentication_blueprint.route('/logout')
-def logout():
-    return 'Logout'
 
 
 @authentication_blueprint.route('/protected', methods=['GET'])
@@ -115,23 +140,8 @@ def register():
 
     saved_user = User.query.filter_by(email=email).first()
 
-    login_response = login_user_and_get_token(saved_user)
-    login_response['message'] = "User registered successfully"
-
-    return jsonify(login_response), 201
-
-
-def login_user_and_get_token(user):
-    login_user(user)
-
-    token = jwt.encode({
-        'user_id': user.id,
-        'exp': datetime.now(timezone.utc) + JWT_EXPIRATION_DELTA
-    }, JWT_SECRET, algorithm='HS256')
-
-    return {
-        "token": token
-    }
+    response = create_logged_in_user_response(saved_user)
+    return response, 201
 
 
 
@@ -139,14 +149,75 @@ def login_user_and_get_token(user):
 def authenticate():
     data = request.get_json()
 
-    email = data.get('email')
-    password = data.get('password')
-    if not email or not password:
-        return jsonify({'error': 'Email and password are required'}), 400
+    # Validate parameters
+    errors = []
+    validator = ApiRequestValidator()
 
-    user = User.query.filter_by(email=email).first()
-    if user and user.check_password(password):
-        login_response = login_user_and_get_token(user)
-        return jsonify(login_response), 200
-    else:
-        return jsonify({"message": "Invalid email or password."}), 401
+    areCredentialsInvalid = False
+    httpStatus = 400
+    user = None
+
+    email = data.get('email')
+    if validator.ensure_value_provided ('email', email) and validator.ensure_is_string('email', email):
+        user = User.query.filter_by(email=email).first()
+        if not user:
+            areCredentialsInvalid = True
+
+    password = data.get('password')
+    if validator.ensure_value_provided ('password', password) and validator.ensure_is_string('password', password):
+        if not user or areCredentialsInvalid == False and not user.check_password(password):
+            areCredentialsInvalid = True
+
+    if areCredentialsInvalid == True:
+        validator.add_invalid_credentials_error("Login failed due to invalid credentials.")
+        httpStatus = 401
+    
+    if validator.get_error_count() > 0:
+        return jsonify(validator.get_error_object()), httpStatus
+    
+    # The credentials are valid, log the user in
+    response = create_logged_in_user_response(user)
+    return response, 200
+
+
+
+@authentication_blueprint.route('/refresh_token', methods=['POST'])
+def refresh_token():
+    data = request.get_json()
+
+    # Validate parameters
+    errors = []
+    validator = ApiRequestValidator()
+
+    refresh_token = data.get('refresh_token')
+    validator.ensure_value_provided ('refresh_token', refresh_token)
+    validator.ensure_is_string('refresh_token', refresh_token)
+        
+    if validator.get_error_count() > 0:
+        return jsonify(validator.get_error_object()), 400
+
+    # Has the token expired?
+    user_token = UserToken.query.filter_by(refresh_token=refresh_token).first()
+    if not user_token or datetime.now(timezone.utc) >= user_token.refresh_token_expires:
+        validator.add_expired_refresh_token_error()
+        return jsonify(validator.get_error_object()), 401
+
+    # Generate new tokens
+    user_id = user_token.user_id
+
+    new_access_token, access_token_expires = create_access_token(user_id)
+    new_refresh_token, refresh_token_expires = create_refresh_token(user_id)
+
+    # Update the existing token record
+    user_token.refresh_token = new_refresh_token
+    user_token.access_token_expires = access_token_expires
+    user_token.refresh_token_expires = refresh_token_expires
+
+    db.session.commit()
+
+    return jsonify({
+        'access_token': new_access_token,
+        'access_token_expires': access_token_expires.timestamp(),
+        'refresh_token': new_refresh_token,
+        'refresh_token_expires': refresh_token_expires.timestamp(),
+    }), 200

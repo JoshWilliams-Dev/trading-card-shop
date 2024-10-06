@@ -1,9 +1,13 @@
 import React, { useState } from 'react';
 import { useNavigate } from "react-router-dom";
 
+import useCheckLoginStatus from '../hooks/useCheckLoginStatus';
+
 
 
 const Register = () => {
+    useCheckLoginStatus(); 
+
     const navigate = useNavigate();
 
     const [email, setEmail] = useState('');

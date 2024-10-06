@@ -23,6 +23,19 @@ class BaseError:
     
 
 
+class InternalServerError(BaseError):
+    """
+    Error type for internal server errors.
+    """
+    def __init__(self, message):
+        super().__init__(code=1, message=message)
+
+    def to_dict(self):
+        error_dict = super().to_dict()
+        return error_dict
+    
+
+
 class ParameterError(BaseError):
     """
     Error type for parameter-related issues.
@@ -31,10 +44,32 @@ class ParameterError(BaseError):
         param (str): The name of the parameter that caused the error.
     """
     def __init__(self, message, param):
-        super().__init__(code=1, message=message)
+        super().__init__(code=2, message=message)
         self.param = param
 
     def to_dict(self):
         error_dict = super().to_dict()
         error_dict["param"] = self.param
+        return error_dict
+    
+
+
+class InvalidCredentialsError(BaseError):
+    
+    def __init__(self, message):
+        super().__init__(code=3, message=message)
+
+    def to_dict(self):
+        error_dict = super().to_dict()
+        return error_dict
+    
+
+
+class ExpiredRefreshTokenError(BaseError):
+    
+    def __init__(self, message):
+        super().__init__(code=4, message=message)
+
+    def to_dict(self):
+        error_dict = super().to_dict()
         return error_dict

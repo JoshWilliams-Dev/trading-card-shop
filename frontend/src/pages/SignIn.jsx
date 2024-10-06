@@ -1,59 +1,62 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from "react-router-dom";
+import { login } from '../api/loginService';
+import useCheckLoginStatus from '../hooks/useCheckLoginStatus';
 
 
 
 const SignIn = () => {
+    useCheckLoginStatus();
+
     const navigate = useNavigate();
 
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const [error, setError] = useState('');
-    const [success, setSuccess] = useState('');
     const [errors, setErrors] = useState({});
+
+    
 
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        const errorMap = {};
-
-        const backendUrl = process.env.REACT_APP_BACKEND_URL;
+        const errorMap = {
+            "global":[]
+        };
 
         try {
-            const response = await fetch(backendUrl + '/authenticate', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ email, password }),
-            });
+            const response = await login(email, password);
 
             if (response.ok) {
-                setSuccess('User registered successfully!');
                 setEmail('');
                 setPassword('');
-                setError('');
                 setErrors('');
 
-                const data = await response.json();
-
-                localStorage.setItem('api_token', data.token);
-
-                navigate('/login');
+                navigate('/dashboard');
             } else {
                 const data = await response.json();
 
                 data.errors.forEach(error => {
-                    if (!errorMap[error.param]) {
-                        errorMap[error.param] = [];
+                    const paramKey = error.param || "global"; 
+
+                    if (!errorMap[paramKey]) {
+                        errorMap[paramKey] = [];
                     }
-                    errorMap[error.param].push(error.message);
+                    errorMap[paramKey].push(error.message);
                 });
+
+                setPassword('');
                 setErrors(errorMap);
             }
         } catch (err) {
-            setError('Failed to connect to the server.');
-            console.error(err);
+            console.log(err);
+
+            errorMap.global.push(err.message);
+        }
+
+        const hasErrors = Object.values(errorMap).some(array => array.length > 0);
+        if (hasErrors)
+        {
+            setErrors(errorMap);
         }
     };
 
@@ -131,8 +134,9 @@ const SignIn = () => {
                                         <button className="btn btn-primary btn-lg mt-4" type="submit">Log In</button>
                                     </div>
                                     <div className="col-12">
-                                        {error && <p style={{ color: 'red' }}>{error}</p>}
-                                        {success && <p style={{ color: 'green' }}>{success}</p>}
+                                        {errors.global && errors.global.map((msg, index) => (
+                                            <span key={index} className="text-danger">{msg}</span>
+                                        ))}
                                     </div>
                                 </div>
                             </form>
@@ -140,8 +144,7 @@ const SignIn = () => {
                                 <div className="col-12">
                                     <hr className="mt-5 mb-4 border-secondary-subtle" />
                                     <div className="d-flex gap-2 gap-md-4 flex-column flex-md-row justify-content-md-center">
-                                        <a href="#!" className="link-secondary text-decoration-none">Create new account</a>
-                                        <a href="#!" className="link-secondary text-decoration-none">Forgot password</a>
+                                        <a href="/register" className="link-secondary text-decoration-none">Create new account</a>
                                     </div>
                                 </div>
                             </div>

@@ -2,7 +2,7 @@ import json
 import re
 import base64
 
-from app.errors import ParameterError
+from app.errors import *
 
 
 class ApiRequestValidator:
@@ -24,6 +24,18 @@ class ApiRequestValidator:
             param (str): The name of the parameter that caused the error.
         """
         error = ParameterError(message, param)
+        self.errors.append(error)
+
+    def add_invalid_credentials_error(self, message=None):
+        if message is None:
+            message = "Invalid credentials."                
+        error = InvalidCredentialsError(message)
+        self.errors.append(error)
+
+    def add_expired_refresh_token_error(self, message=None):
+        if message is None:
+            message = "Refresh token is invalid or has expired."                
+        error = ExpiredRefreshTokenError(message)
         self.errors.append(error)
 
     def ensure_value_provided(self, param_name, param_value, message=None):

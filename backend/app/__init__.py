@@ -1,9 +1,11 @@
-from flask import Flask, render_template
+from flask import Flask, jsonify, render_template
 from flask_cors import CORS, cross_origin
 from flask_login import LoginManager, login_required
 from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
 from flask_migrate import Migrate
+
+from app.errors import InternalServerError
 
 # Initialize extensions
 db = SQLAlchemy()
@@ -38,16 +40,19 @@ def create_app():
     from app.routes import auth_blueprint
     app.register_blueprint(auth_blueprint)
 
-    CORS(app, resources={r"/*": {"origins": "*", "allow_headers": "*", "expose_headers": "*"}})
-    
-    
-    @app.route('/')
-    def default():
-        return render_template('index.html')
-    
-    @app.route('/secure')
-    @login_required
-    def test_auth():
-        return render_template('test-auth.html')
+    # CORS(app, resources={r"/*": {"origins": "*", "allow_headers": "*", "expose_headers": "*"}})
+    # Enable CORS with specific settings using the environment variable for origins
+    CORS(app, supports_credentials=True, resources={r"/*": {
+        "origins": app.config['CORS_ORIGINS'],  # Use the CORS_ORIGINS from config
+        "allow_headers": ["Content-Type", "Authorization"],
+        "methods": ["GET", "POST", "OPTIONS"],
+        "expose_headers": ["Authorization"]
+    }})
+
+    @app.errorhandler(500)
+    def internal_error(error):
+        error_message = str(error)
+        response = InternalServerError(error_message)
+        return jsonify(response), 500
 
     return app
