@@ -1,0 +1,21 @@
+/* Main content styling */
+.main-content {
+    height: 100vh;
+    /* Full height to match the viewport */
+    display: flex;
+    flex-direction: column;
+}
+
+/* Header styling */
+.main-header {
+    flex-shrink: 0;
+    /* Ensure the header does not shrink */
+}
+
+/* Content area styling */
+.content-area {
+    flex-grow: 1;
+    /* Allow the content area to take up the remaining space */
+    overflow-y: auto;
+    /* Enable scrolling if the content overflows */
+}

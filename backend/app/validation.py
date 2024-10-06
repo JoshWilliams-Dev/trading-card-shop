@@ -114,6 +114,47 @@ class ApiRequestValidator:
             self.add_parameter_error("The email address is not valid.", param_name)
             return False
         return True
+
+    def ensure_is_float(self, param_name, value, message=None):
+        """Ensure the provided value is a float; if not, log an error unless the value is None.
+
+        Args:
+            param_name (str): The name of the parameter to check.
+            value (Any): The value to validate as a float.
+            message (str, optional): Custom error message if value is not a float. Defaults to None.
+
+        Returns:
+            bool: False if the value is not a float (and not None) and an error is logged; True otherwise.
+        """
+        if value is not None:
+            try:
+                number = float(value)
+                return True
+            except (ValueError, TypeError):
+                self.add_parameter_error(f"'{param_name}' must be a float.", param_name)
+                return False
+        return True
+    
+    def ensure_positive_value(self, param_name, value):
+        """Ensure the provided parameter is a valid numeric; if not, log an error.
+
+        Args:
+            param_name (str): The name of the parameter to check.
+            value (any): The value to validate as a base-64 string.
+
+        Returns:
+            bool: False if the value is not a valid base-64 string and an error is logged; True otherwise.
+        """
+        try:
+            number = float(value)
+            if number > 0:
+                return True
+            else:
+                self.add_parameter_error(f"'{param_name}' must be a positive number, received {value}.", param_name)
+                return False
+        except (ValueError, TypeError):
+            self.add_parameter_error(f"'{param_name}' must be a string.", param_name)
+            return False
     
     def ensure_base64_format(self, param_name, value):
         """Ensure the provided parameter is a valid base-64 encoded string; if not, log an error.

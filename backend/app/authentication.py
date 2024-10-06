@@ -1,8 +1,10 @@
 from datetime import datetime, timedelta, timezone
+from functools import wraps
 import re
 from flask import Blueprint, jsonify, request, make_response
-from flask_login import login_user, current_user
+from flask_login import login_user, current_user, logout_user
 import jwt
+from sqlalchemy import delete
 
 from app.models import User, UserToken
 from app.validation import ApiRequestValidator
@@ -59,17 +61,19 @@ def create_logged_in_user_response(user):
 
 
 def token_required(f):
+    @wraps(f)
     def wrapper(*args, **kwargs):
         token = request.headers.get('Authorization')
-        if token:
+        if token and token.startswith('Bearer '):
+            token = token.split(' ')[1]  # Remove "Bearer" part
             try:
                 # Decode the token
-                data = jwt.decode(token, JWT_SECRET, algorithms=['HS256'])
+                data = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
                 user_id = data['user_id']
                 user = load_user(user_id=user_id)
                 if user:
-                    login_user(user)  # Log in user based on token
-                    return f(*args, **kwargs)
+                    # Pass the user to the decorated function
+                    return f(user, *args, **kwargs)
             except jwt.ExpiredSignatureError:
                 return jsonify({'message': 'Token expired'}), 401
             except jwt.InvalidTokenError:
@@ -90,8 +94,8 @@ def validate_password_minimum_requirements(password):
 
 @authentication_blueprint.route('/protected', methods=['GET'])
 @token_required
-def protected_route():
-    return jsonify({'message': f'Welcome, {current_user.display_name}!'})
+def protected_route(user):
+    return jsonify({'message': f'Welcome, {user.display_name}!'})
 
 
 
@@ -221,3 +225,21 @@ def refresh_token():
         'refresh_token': new_refresh_token,
         'refresh_token_expires': refresh_token_expires.timestamp(),
     }), 200
+
+
+
+@authentication_blueprint.route('/logout', methods=['POST'])
+@token_required
+def logout(user):
+    logout_user()
+
+    # Perform a bulk delete for all UserToken records by user_id
+    result = db.session.execute(
+        delete(UserToken).where(UserToken.user_id == user.id)
+    )
+
+    # Commit the transaction
+    db.session.commit()
+
+    
+    return jsonify({'message': 'Logout successful. Token revoked.'}), 200

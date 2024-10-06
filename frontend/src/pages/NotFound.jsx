@@ -3,23 +3,16 @@ import { Link } from 'react-router-dom';
 
 const NotFound = () => {
   return (
-    <div style={styles.container}>
+    <div className="d-flex flex-column align-items-center justify-content-center text-center vh-100">
       <h1 style={styles.heading}>404 - Page Not Found</h1>
-      <p style={styles.paragraph}>Oops! The page you're looking for does not exist.</p>
+      <p>Oops! The page you're looking for does not exist.</p>
       <Link to="/" style={styles.link}>Go back to Home</Link>
     </div>
   );
 };
 
+
 const styles = {
-  container: {
-    display: 'flex',
-    flexDirection: 'column',
-    justifyContent: 'center',
-    alignItems: 'center',
-    height: '100vh',
-    textAlign: 'center',
-  },
   heading: {
     fontSize: '48px',
     margin: '20px 0',

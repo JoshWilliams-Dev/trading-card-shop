@@ -7,8 +7,7 @@ const API_BASE_URL = process.env.REACT_APP_BACKEND_URL;
 const makeRequest = async (url, options = {}, requiresAuthentication = true) => {
 
     let headers = {
-        'Content-Type': 'application/json',
-        ...options.headers,
+        ...options.headers
     };
 
     const LOGIN_URL = '/login';
@@ -23,7 +22,7 @@ const makeRequest = async (url, options = {}, requiresAuthentication = true) => 
 
         // If no valid token, redirect to login
         if (!accessToken) {
-            console.error('No valid access token found.');
+            console.error('Request requires authentication, but no authorization token is present.');
             window.location.href = LOGIN_URL;
             return createUnauthorizedResult();
         }
@@ -75,7 +74,7 @@ const makeRequest = async (url, options = {}, requiresAuthentication = true) => 
                 redirected: retryResponse.redirected,
                 timeTaken,
                 json: async () => await retryResponse.json(),
-              };
+            };
         }
 
         // Return JSON response
@@ -87,7 +86,7 @@ const makeRequest = async (url, options = {}, requiresAuthentication = true) => 
             redirected: response.redirected,
             timeTaken,
             json: async () => await response.json(),
-          };
+        };
     } catch (error) {
         console.error('Error making API request:', error);
         return { ok: false, status: 500, json: async () => ({ message: 'Internal Server Error' }), error: error instanceof Error ? error : new Error('An unknown error occurred') };
@@ -96,13 +95,34 @@ const makeRequest = async (url, options = {}, requiresAuthentication = true) => 
 
 
 
-export const postData = async (url, body, requiresAuthentication = true, options = {}) => {
+export const postJsonData = async (url, body, requiresAuthentication = true, options = {}) => {
+
+    let headers = {
+        'Content-Type': 'application/json',
+        ...options.headers,
+    };
 
     let request_options = {
         ...options,
         method: 'POST',
         body: JSON.stringify(body),
+        headers: headers
     };
 
     return await makeRequest(url, request_options, requiresAuthentication);
-  };
+};
+
+
+
+export const createCard = async (formData) => {
+
+    let request_options = {
+        method: 'POST',
+        body: formData
+    };
+
+    return await makeRequest("/cards", request_options, true);
+};
+
+
+

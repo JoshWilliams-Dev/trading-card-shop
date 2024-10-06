@@ -43,7 +43,7 @@ def create_app():
     # CORS(app, resources={r"/*": {"origins": "*", "allow_headers": "*", "expose_headers": "*"}})
     # Enable CORS with specific settings using the environment variable for origins
     CORS(app, supports_credentials=True, resources={r"/*": {
-        "origins": app.config['CORS_ORIGINS'],  # Use the CORS_ORIGINS from config
+        "origins": app.config['CORS_ORIGINS'],
         "allow_headers": ["Content-Type", "Authorization"],
         "methods": ["GET", "POST", "OPTIONS"],
         "expose_headers": ["Authorization"]

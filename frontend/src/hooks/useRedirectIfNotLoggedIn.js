@@ -2,16 +2,15 @@ import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getAccessToken } from '../api/tokenService';
 
-const useCheckLoginStatus = () => {
+const useRedirectIfLoggedIn = () => {
     const navigate = useNavigate();
 
     useEffect(() => {
         const checkLoginStatus = async () => {
             const token = await getAccessToken();
 
-            if (token) {
-                // If a valid token is found, redirect to dashboard
-                navigate('/dashboard');
+            if (!token) {
+                navigate('/login');
             }
         };
 
@@ -19,4 +18,4 @@ const useCheckLoginStatus = () => {
     }, [navigate]);
 };
 
-export default useCheckLoginStatus;
+export default useRedirectIfLoggedIn;

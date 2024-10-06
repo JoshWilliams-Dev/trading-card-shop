@@ -1,12 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from "react-router-dom";
 import { login } from '../api/loginService';
-import useCheckLoginStatus from '../hooks/useCheckLoginStatus';
+import useRedirectIfLoggedIn from '../hooks/useRedirectIfLoggedIn';
 
 
 
 const SignIn = () => {
-    useCheckLoginStatus();
+    useRedirectIfLoggedIn();
 
     const navigate = useNavigate();
 
@@ -31,7 +31,7 @@ const SignIn = () => {
                 setPassword('');
                 setErrors('');
 
-                navigate('/dashboard');
+                navigate('/shop');
             } else {
                 const data = await response.json();
 
@@ -45,7 +45,6 @@ const SignIn = () => {
                 });
 
                 setPassword('');
-                setErrors(errorMap);
             }
         } catch (err) {
             console.log(err);

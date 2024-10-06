@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import { useNavigate } from "react-router-dom";
 
-import useCheckLoginStatus from '../hooks/useCheckLoginStatus';
+import useRedirectIfLoggedIn from '../hooks/useRedirectIfLoggedIn';
 
 
 
 const Register = () => {
-    useCheckLoginStatus(); 
+    useRedirectIfLoggedIn();
 
     const navigate = useNavigate();
 
@@ -14,8 +14,6 @@ const Register = () => {
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [displayName, setDisplayName] = useState('');
-    const [error, setError] = useState('');
-    const [success, setSuccess] = useState('');
     const [errors, setErrors] = useState({});
 
     const validatePassword = (password) => {
@@ -40,7 +38,9 @@ const Register = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        const errorMap = {};
+        const errorMap = {
+            "global": []
+        };
 
         if (password !== confirmPassword) {
             errorMap["password_confirmation"] = ["Passwords do not match."];
@@ -68,11 +68,9 @@ const Register = () => {
             });
 
             if (response.ok) {
-                setSuccess('User registered successfully!');
                 setEmail('');
                 setPassword('');
                 setConfirmPassword('');
-                setError('');
 
                 const data = await response.json();
 
@@ -88,11 +86,15 @@ const Register = () => {
                     }
                     errorMap[error.param].push(error.message);
                 });
-                setErrors(errorMap);
             }
         } catch (err) {
-            setError('Failed to connect to the server.');
             console.error(err);
+            errorMap.global.push(err.message);
+        }
+
+        const hasErrors = Object.values(errorMap).some(array => array.length > 0);
+        if (hasErrors) {
+            setErrors(errorMap);
         }
     };
 
@@ -224,8 +226,9 @@ const Register = () => {
                                         <button className="btn btn-primary btn-lg mt-4" type="submit">Sign Up</button>
                                     </div>
                                     <div className="col-12">
-                                        {error && <p style={{ color: 'red' }}>{error}</p>}
-                                        {success && <p style={{ color: 'green' }}>{success}</p>}
+                                        {errors.global && errors.global.map((msg, index) => (
+                                            <span key={index} className="text-danger">{msg}</span>
+                                        ))}
                                     </div>
                                 </div>
                             </form>

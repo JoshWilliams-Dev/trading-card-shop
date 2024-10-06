@@ -1,4 +1,4 @@
-import { postData } from './api';
+import { postJsonData } from './api';
 
 
 
@@ -39,9 +39,11 @@ export const refreshAccessToken = async () => {
 
     try {
         // Refresh access token using the refresh token
-        const response = await postData(
+        const response = await postJsonData(
             '/refresh_token',
-            {},
+            {
+                'refresh_token': refresh_token
+            },
             false,
             {
                 credentials: 'include',

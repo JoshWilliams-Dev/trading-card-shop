@@ -22,10 +22,10 @@ class User(db.Model, UserMixin):
     
     def to_dict(self):
         return {
-            'user': self.user,
-            'refresh_token': self.refresh_token,
-            'access_token_expires': self.access_token_expires.timestamp(),
-            'refresh_token_expires': self.refresh_token_expires.timestamp()
+            'id': self.id,
+            'email': self.email,
+            'password_hash': self.password_hash,
+            'display_name': self.display_name
         }
     
 
@@ -44,8 +44,36 @@ class UserToken(db.Model):
 
     def to_dict(self):
         return {
+            'id': self.id,
             'user_id': self.user_id,
             'refresh_token': self.refresh_token,
             'access_token_expires': self.access_token_expires.timestamp(),
             'refresh_token_expires': self.refresh_token_expires.timestamp()
+        }
+    
+
+
+
+class Card(db.Model):
+    __tablename__ = 'Cards'
+    IMAGE_FILENAME_MAX_LENGTH = 50
+    IMAGE_FILEPATH_MAX_LENGTH = 120
+    DESCRIPTION_MAX_LENGTH = 255
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey(User.__tablename__ + ".id"), nullable=False)
+    image_filename = db.Column(db.String(IMAGE_FILENAME_MAX_LENGTH), nullable=False)
+    image_filepath = db.Column(db.String(IMAGE_FILEPATH_MAX_LENGTH), nullable=False)
+    description = db.Column(db.String(DESCRIPTION_MAX_LENGTH), nullable=False)
+    price = db.Column(db.Float, nullable=False)
+
+    user = db.relationship('User', backref='cards', lazy=True)
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'user_id': self.user_id,
+            'image_filename': self.image_filename,
+            'description': self.description,
+            'price': self.price
         }
