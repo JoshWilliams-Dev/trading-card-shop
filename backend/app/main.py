@@ -5,7 +5,7 @@ from flask import Blueprint, jsonify, render_template, request, send_from_direct
 from flask_login import login_required
 
 from app.authentication import token_required
-from app.models import Card
+from app.models import Card, CartItem
 from app.validation import ApiRequestValidator
 from . import db
 
@@ -220,3 +220,70 @@ def get_paginated_cards(page_index, page_size, user_id=None):
         'total_cards': total_cards
     }), 200
 
+
+
+
+
+
+@main_blueprint.route('/cart', methods=['GET'])
+@token_required
+def get_cart(user):
+    cart_items = CartItem.query.filter_by(user_id=user.id).all()
+    args = request.args
+
+    return jsonify([{
+        'id': item.id,
+        'card_id': item.card_id,
+        'quantity': item.quantity,
+        'card': item.card.to_api_dict()
+    } for item in cart_items]), 200
+
+
+
+@main_blueprint.route('/cart', methods=['POST'])
+@token_required
+def add_to_cart(user):
+    data = request.get_json()
+
+    card_id = data.get('card_id')
+    quantity = data.get('quantity', 1)
+
+    existing_item = CartItem.query.filter_by(user_id=user.id, card_id=card_id).first()
+    if existing_item:
+        existing_item.quantity += quantity
+        db.session.commit()
+        return jsonify({'message': 'Updated quantity in cart'}), 200
+    else:
+        new_item = CartItem(user_id=user.id, card_id=card_id, quantity=quantity)
+        db.session.add(new_item)
+        db.session.commit()
+        return jsonify({'message': 'Added to cart'}), 201
+    
+
+
+@main_blueprint.route('/cart/<int:item_id>', methods=['PUT'])
+@token_required
+def update_cart_item(user, item_id):
+    user_id = user.id
+    data = request.json
+    quantity = data.get('quantity')
+
+    cart_item = CartItem.query.filter_by(id=item_id, user_id=user_id).first()
+    if cart_item:
+        cart_item.quantity = quantity
+        db.session.commit()
+        return jsonify({'message': 'Cart item updated'}), 200
+    return jsonify({'message': 'Cart item not found'}), 404
+
+
+
+@main_blueprint.route('/cart/<int:item_id>', methods=['DELETE'])
+@token_required
+def remove_cart_item(user, item_id):
+    user_id = user.id
+    cart_item = CartItem.query.filter_by(id=item_id, user_id=user_id).first()
+    if cart_item:
+        db.session.delete(cart_item)
+        db.session.commit()
+        return jsonify({'message': 'Cart item removed'}), 200
+    return jsonify({'message': 'Cart item not found'}), 404

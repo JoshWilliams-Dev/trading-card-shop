@@ -108,3 +108,16 @@ class Card(db.Model):
                 return None
         else:
             return None  # File path does not exist
+        
+
+
+class CartItem(db.Model):
+    __tablename__ = 'CartItems'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey(User.id), nullable=False)
+    card_id = db.Column(db.Integer, db.ForeignKey(Card.id), nullable=False)
+    quantity = db.Column(db.Integer, nullable=False, default=1)
+
+    user = db.relationship('User', backref='cart_items', lazy=True)
+    card = db.relationship('Card', backref='cart_items', lazy=True)

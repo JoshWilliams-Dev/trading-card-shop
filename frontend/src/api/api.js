@@ -146,10 +146,10 @@ export const getJsonData = async (url, requiresAuthentication = true, options = 
 
 export const getCards = async (pageIndex, pageSize, filterByLoggedInUser) => {
 
-    const queryString  = new URLSearchParams({
+    const queryString = new URLSearchParams({
         "page_index": pageIndex,
         "page_size": pageSize
-      }).toString();
+    }).toString();
 
     let endpoint;
     let requiresAuthentication;
@@ -167,3 +167,62 @@ export const getCards = async (pageIndex, pageSize, filterByLoggedInUser) => {
 
 
 
+export const addToCart = async (cardId, quantity) => {
+
+    const response = await postJsonData('/cart', { card_id: cardId, quantity: quantity }, false);
+
+    return response;
+};
+
+
+
+export const getCart = async () => {
+
+    let endpoint = "/cart";
+    let requiresAuthentication = true;
+
+    return await getJsonData(endpoint, requiresAuthentication);
+};
+
+
+
+export const updateCartItem = async (itemId, quantity) => {
+
+    let headers = {
+        'Content-Type': 'application/json'
+    };
+
+
+    let body = { quantity: quantity };
+
+    let request_options = {
+        method: 'PUT',
+        body: JSON.stringify(body),
+        headers: headers
+    };
+
+    let endpoint = `/cart/${itemId}`
+    let requiresAuthentication = true;
+
+    return await makeRequest(endpoint, request_options, requiresAuthentication);
+};
+
+
+
+export const removeCartItem = async (itemId) => {
+
+    let headers = {
+        'Content-Type': 'application/json'
+    };
+
+    let request_options = {
+        method: 'DELETE',
+        body: {},
+        headers: headers
+    };
+
+    let endpoint = `/cart/${itemId}`
+    let requiresAuthentication = true;
+
+    return await makeRequest(endpoint, request_options, requiresAuthentication);
+};

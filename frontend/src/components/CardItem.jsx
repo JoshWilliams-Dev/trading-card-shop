@@ -16,6 +16,8 @@ const CardItem = ({ card }) => {
                     <p className="card-text">Price: ${card.price}</p>
                 </div>
             </div>
+
+
         </div>
     );
 };

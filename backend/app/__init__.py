@@ -37,9 +37,6 @@ def create_app():
     from .main import main_blueprint as main_bp
     app.register_blueprint(main_bp)
 
-    from app.routes import auth_blueprint
-    app.register_blueprint(auth_blueprint)
-
     # CORS(app, resources={r"/*": {"origins": "*", "allow_headers": "*", "expose_headers": "*"}})
     # Enable CORS with specific settings using the environment variable for origins
     CORS(app, supports_credentials=True, resources={r"/*": {
