@@ -1,0 +1,97 @@
+div.card-item {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    word-wrap: break-word;
+    background-color: #fff;
+    background-clip: border-box;
+    border: 1px solid #eff0f2;
+    border-radius: 1rem;
+    margin-bottom: 24px;
+    box-shadow: 0 2px 3px #e4e8f0;
+}
+
+div.card-item > div.panel {
+    border-style: solid;
+    border-width: 1px;
+    border-color: #0d0d0d;
+    margin-bottom: 1.25rem;
+    padding: 0.5em;
+    background: #334e60;
+    color: #e1e1e1;
+    background-image: -webkit-linear-gradient(bottom, #334e60 0%, #2f495a 75%, #2a4150 100%);
+    background-image: linear-gradient(to top, #334e60 0%, #2f495a 75%, #2a4150 100%);
+    box-shadow: inset 0px 3px 10px rgba(0, 0, 0, 0.5), 0 1px 0 rgba(255, 255, 255, 0.15);
+}
+
+div.card-item > div.panel > img {
+    box-shadow: 2px 0 5px rgba(17, 17, 17, 0.5);
+    border-radius: 12px;
+    display: table;
+    margin: 0 auto;
+    text-align: center;
+    border: none;
+    vertical-align: middle;
+    max-width: 100%;
+    height: auto;
+    border-style: solid;
+    border-width: 1px;
+    border-color: #0d0d0d;
+    margin-bottom: 1.25rem;
+    padding: 0.625rem;
+    background: #334e60;
+    background-image: linear-gradient(to top, #334e60 0%, #2f495a 75%, #2a4150 100%);
+    box-shadow: inset 0px 3px 10px rgba(0, 0, 0, 0.5), 0 1px 0 rgba(255, 255, 255, 0.15);
+}
+
+
+
+
+
+
+@media only screen and (min-width: 40.0625em) {
+    .card-parent {
+        width: 33.33333%;
+    }
+}
+
+
+
+
+@media only screen and (min-width: 64.0625em) {
+    .card-parent {
+        width: 90%;
+    }
+}
+
+
+
+.card-item {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    word-wrap: break-word;
+    background-color: #fff;
+    background-clip: border-box;
+    border: 1px solid #eff0f2;
+    border-radius: 1rem;
+    transition: transform 0.3s ease; /* Smooth transition for card scaling */
+}
+
+.card-item:hover {
+    transform: scale(1.05); /* Slightly grow the card on hover */
+}
+
+.card {
+    margin-bottom: 24px;
+    box-shadow: 0 2px 3px #e4e8f0;
+}
+
+.card-img-top {
+    width: 155px; /* Ensure the image fits within the card */
+    height: 217px;
+    object-fit: cover;  /* Cover the area while maintaining aspect ratio */
+    transition: transform 0.3s ease; /* Smooth transition for the image */
+}

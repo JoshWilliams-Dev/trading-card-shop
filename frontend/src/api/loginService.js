@@ -48,3 +48,21 @@ export const logout = async () => {
 
     return response;
 };
+
+
+
+export const isLoggedIn = async() => {
+    try {
+        let accessToken = await getAccessToken();
+
+        // Check if the access token exists
+        if (accessToken !== null) {
+            return true; // User is logged in
+        }
+        
+        return false; // User is not logged in
+    } catch (error) {
+        console.error('Error determining if the user is logged in:', error);
+        return false;
+    }
+}

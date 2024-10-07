@@ -52,7 +52,7 @@ def create_app():
     @app.errorhandler(500)
     def internal_error(error):
         error_message = str(error)
-        response = InternalServerError(error_message)
+        response = InternalServerError(error_message).to_dict()
         return jsonify(response), 500
 
     return app

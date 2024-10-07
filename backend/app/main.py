@@ -1,5 +1,6 @@
 from datetime import datetime, timezone
 import hashlib
+from math import ceil
 from flask import Blueprint, jsonify, render_template, request, send_from_directory, current_app as app
 from flask_login import login_required
 
@@ -131,3 +132,91 @@ def create_card(user):
     db.session.commit()
 
     return jsonify(validator.get_error_object()), 201
+
+
+
+
+
+
+
+@main_blueprint.route('/cards/list/mine', methods=['GET'])
+@token_required
+def get_paginated_cards_created_by_user(user):
+    args = request.args
+
+    # Validate parameters
+    validator, page_index, page_size = prepare_paginated_cards()
+
+    if validator.get_error_count() > 0:
+        return jsonify(validator.get_error_object()), 400
+
+    return get_paginated_cards(page_index=page_index, page_size=page_size, user_id=user.id)
+
+
+@main_blueprint.route('/cards/list', methods=['GET'])
+def get_paginated_cards_indiscriminately():
+    args = request.args
+
+    # Validate parameters
+    validator, page_index, page_size = prepare_paginated_cards()
+
+    if validator.get_error_count() > 0:
+        return jsonify(validator.get_error_object()), 400
+
+    return get_paginated_cards(page_index=page_index, page_size=page_size, user_id=None)
+
+
+
+def prepare_paginated_cards():
+    args = request.args
+
+    validator = ApiRequestValidator()
+
+    page_index = args.get('page_index')
+    if validator.ensure_value_provided ('page_index', page_index) and validator.ensure_is_int('page_index', page_index):
+        validator.ensure_positive_value('page_index', page_index)
+
+    page_size = args.get('page_size')
+    if validator.ensure_value_provided ('page_size', page_size) and validator.ensure_is_int('page_size', page_size):
+        validator.ensure_positive_value('page_size', page_size)
+
+    return validator, int(page_index), int(page_size)
+    
+
+
+def get_paginated_cards(page_index, page_size, user_id=None):
+    
+    query = Card.query
+
+    if user_id:
+        query = query.filter(Card.user_id == user_id)
+        print(str(query))
+    
+    
+    # Get the details from the database
+    total_cards = query.count()
+    total_pages = ceil(total_cards / page_size)
+
+    if page_index < 1 or page_index > total_pages:
+        return jsonify({
+            'cards': {},
+            'current_page': page_index,
+            'total_pages': total_pages,
+            'total_cards': total_cards
+        }), 204
+
+    cards = query.order_by(Card.id.desc())\
+        .offset((page_index - 1) * page_size)\
+        .limit(page_size)\
+        .all()
+
+    # Convert card objects to dictionaries
+    card_list = [card.to_api_dict() for card in cards]
+
+    # Return paginated data as JSON response
+    return jsonify({
+        'cards': card_list,
+        'total_pages': total_pages,
+        'total_cards': total_cards
+    }), 200
+

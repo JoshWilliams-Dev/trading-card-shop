@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import LoggedInLayout from '../components/LoggedInLayout';
+import Layout from '../components/Layout';
 import CurrencyInput from '../components/CurrencyInput';
 import { createCard } from '../api/api';
 import { useToast } from '../contexts/ToastContext';
@@ -45,7 +45,6 @@ const Cardsmith = () => {
         formData.append('file', file);
         formData.append('description', description);
         formData.append('price', price);
-        console.log(formData);
 
         try {
 
@@ -55,13 +54,12 @@ const Cardsmith = () => {
                 // setFile('');
                 // setDescription('');
                 // setPrice('');
-
-                const data = await response.json();
-                console.log(data);
+                setErrors('');
 
                 showToast('The card has been added to your collection.');
             }
             else {
+                console.log(response);
                 const data = await response.json();
                 console.log(data);
 
@@ -88,10 +86,10 @@ const Cardsmith = () => {
 
 
     return (
-        <LoggedInLayout title="Design your own cards!">
+        <Layout title="Cardsmith">
             <div className='row my-3'>
                 <div className='col-12'>
-                    <h2>Cardsmith</h2>
+                    <h2>Design your own cards!</h2>
                 </div>
             </div>
             <div className="alert alert-info" role="alert">
@@ -137,7 +135,7 @@ const Cardsmith = () => {
                                 id="imageInput"
                                 type="file"
                                 className="form-control"
-                                title="Enter the same password you entered above."
+                                title="Select the image you'd like to display on the card."
                                 required
                                 onChange={handleFileChange}
                                 accept='image/*'
@@ -149,7 +147,7 @@ const Cardsmith = () => {
                         ))}
                     </div>
                     <div className='col-12'>
-                        <div className="card mx-auto">
+                        <div className="card mx-auto" style={{width: '153px'}}>
                             <div className="imagePreview card-img-top" style={{
                                 width: '155px',  // Set width of the preview div
                                 height: '217px', // Set height of the preview div
@@ -166,7 +164,7 @@ const Cardsmith = () => {
                         {!imagePreview && <p>No image uploaded</p>} {/* Fallback text */}
                     </div>
                     <div className="col-12 text-center">
-                        <button className="btn btn-primary btn-lg mt-4" type="submit">Sign Up</button>
+                        <button className="btn btn-primary btn-lg mt-4" type="submit">Create</button>
                     </div>
                     <div className="col-12">
                         {errors.global && errors.global.map((msg, index) => (
@@ -175,7 +173,7 @@ const Cardsmith = () => {
                     </div>
                 </form>
             </div>
-        </LoggedInLayout>
+        </Layout>
     );
 };
 

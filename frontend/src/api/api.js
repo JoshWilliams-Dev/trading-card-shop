@@ -126,3 +126,44 @@ export const createCard = async (formData) => {
 
 
 
+export const getJsonData = async (url, requiresAuthentication = true, options = {}) => {
+
+    let headers = {
+        'Content-Type': 'application/json',
+        ...options.headers,
+    };
+
+    let request_options = {
+        ...options,
+        method: 'GET',
+        headers: headers
+    };
+
+    return await makeRequest(url, request_options, requiresAuthentication);
+};
+
+
+
+export const getCards = async (pageIndex, pageSize, filterByLoggedInUser) => {
+
+    const queryString  = new URLSearchParams({
+        "page_index": pageIndex,
+        "page_size": pageSize
+      }).toString();
+
+    let endpoint;
+    let requiresAuthentication;
+
+    if (filterByLoggedInUser) {
+        endpoint = `/cards/list/mine?${queryString}`;
+        requiresAuthentication = true;
+    } else {
+        endpoint = `/cards/list?${queryString}`;
+        requiresAuthentication = false;
+    }
+
+    return await getJsonData(endpoint, requiresAuthentication);
+};
+
+
+

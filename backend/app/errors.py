@@ -43,8 +43,8 @@ class ParameterError(BaseError):
     Attributes:
         param (str): The name of the parameter that caused the error.
     """
-    def __init__(self, message, param):
-        super().__init__(code=2, message=message)
+    def __init__(self, message, param, code=2):
+        super().__init__(code, message=message)
         self.param = param
 
     def to_dict(self):
@@ -65,10 +65,19 @@ class InvalidCredentialsError(BaseError):
     
 
 
-class ExpiredRefreshTokenError(BaseError):
-    
+class ExpiredRefreshTokenError(BaseError):    
     def __init__(self, message):
         super().__init__(code=4, message=message)
+
+    def to_dict(self):
+        error_dict = super().to_dict()
+        return error_dict
+    
+
+
+class InvalidFileFormatError(ParameterError):    
+    def __init__(self, message, param):
+        super().__init__(message=message, param=param, code=5)
 
     def to_dict(self):
         error_dict = super().to_dict()

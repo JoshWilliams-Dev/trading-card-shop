@@ -1,0 +1,19 @@
+.card-collection {
+    margin: 20px;
+}
+
+.card-collection .row {
+    align-items: center;
+}
+
+.card-collection .card-items {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+
+.card-collection .form-select {
+    display: inline-block;
+    width: auto;
+    margin: 0 5px;
+}

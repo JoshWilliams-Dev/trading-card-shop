@@ -9,9 +9,11 @@ services:
     networks:
       - app-network
     environment:
-      POSTGRES_USER: trading_cards_db_user
-      POSTGRES_PASSWORD: magic-pokemon-yu-gi-oh-3471
-      POSTGRES_DB: trading_cards_db
+      SECRET_KEY: GhiredConclaveExileRhinoArmy2019
+      DATABASE_URL: postgresql://trading_cards_db_user:magic-pokemon-yu-gi-oh-3471@postgres-db:5432/trading_cards_db
+      CORS_ORIGINS: http://localhost:3000
+      UPLOAD_FOLDER: /app/static/uploads
+      SQLALCHEMY_ECHO: True
     depends_on:
       - postgres-db
 
@@ -62,6 +64,7 @@ services:
     environment:
       PGADMIN_DEFAULT_EMAIL: pgadmin4@pgadmin.org
       PGADMIN_DEFAULT_PASSWORD: admin
+      PGADMIN_HOST: host.docker.internal
 
 
 networks:

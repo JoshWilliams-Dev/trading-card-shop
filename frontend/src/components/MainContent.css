@@ -8,8 +8,9 @@
 
 /* Header styling */
 .main-header {
-    flex-shrink: 0;
+    
     /* Ensure the header does not shrink */
+    flex-shrink: 0;
 }
 
 /* Content area styling */

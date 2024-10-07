@@ -1,3 +1,5 @@
+import base64
+import os
 from app import db, bcrypt
 from flask_login import UserMixin
 
@@ -74,6 +76,35 @@ class Card(db.Model):
             'id': self.id,
             'user_id': self.user_id,
             'image_filename': self.image_filename,
+            'image_filepath': self.image_filepath,
             'description': self.description,
             'price': self.price
         }
+
+    def to_api_dict(self):
+        return {
+            'id': self.id,
+            'user_id': self.user_id,
+            'image_filename': self.image_filename,
+            'description': self.description,
+            'price': self.price,
+            'base64_image': self.get_base64_image()
+        }
+    
+    def get_base64_image(self):
+        """
+        Reads the image from the image_filepath and returns it as a base64 string.
+
+        Returns:
+            str: Base64-encoded string of the image file.
+        """
+        if os.path.exists(self.image_filepath):
+            try:
+                with open(self.image_filepath, 'rb') as image_file:
+                    encoded_string = base64.b64encode(image_file.read()).decode('utf-8')
+                    return encoded_string
+            except Exception as e:
+                print(f"Error reading image file: {e}")
+                return None
+        else:
+            return None  # File path does not exist

@@ -63,6 +63,10 @@ def create_logged_in_user_response(user):
 def token_required(f):
     @wraps(f)
     def wrapper(*args, **kwargs):
+        # Skip token verification for OPTIONS requests
+        if request.method == 'OPTIONS':
+            return jsonify({'message': 'OK'}), 200
+
         token = request.headers.get('Authorization')
         if token and token.startswith('Bearer '):
             token = token.split(' ')[1]  # Remove "Bearer" part

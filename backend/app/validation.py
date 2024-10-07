@@ -3,6 +3,7 @@ import re
 import base64
 
 from app.errors import *
+from app.errors import InvalidFileFormatError
 
 
 class ApiRequestValidator:
@@ -115,6 +116,24 @@ class ApiRequestValidator:
             return False
         return True
 
+    def add_invalid_file_format_error(self, param_name, expected_file_types: set[str]):
+        """Add an invalid file format error to the error list.
+
+        Args:
+            param (str): The name of the parameter that caused the error.
+            expected_file_types (set[str]): A descriptive error message.
+        """
+        message = f"The file format for '{param_name}' is unknown."
+
+        if expected_file_types:
+            formats_list = ', '.join(expected_file_types)
+            message = message + f"  Only the following file formats are allowed: {formats_list}."
+
+        error = InvalidFileFormatError(message, param_name)
+        self.errors.append(error)
+
+
+
     def ensure_is_float(self, param_name, value, message=None):
         """Ensure the provided value is a float; if not, log an error unless the value is None.
 
@@ -135,15 +154,37 @@ class ApiRequestValidator:
                 return False
         return True
     
-    def ensure_positive_value(self, param_name, value):
-        """Ensure the provided parameter is a valid numeric; if not, log an error.
+    def ensure_is_int(self, param_name, value, message=None):
+        """Ensure the provided value is an integer; if not, log an error unless the value is None.
 
         Args:
             param_name (str): The name of the parameter to check.
-            value (any): The value to validate as a base-64 string.
+            value (Any): The value to validate as an integer.
+            message (str, optional): Custom error message if value is not an integer. Defaults to None.
 
         Returns:
-            bool: False if the value is not a valid base-64 string and an error is logged; True otherwise.
+            bool: False if the value is not an integer (and not None) and an error is logged; True otherwise.
+        """
+        if value is not None:
+            try:
+                number = int(value)
+                return True
+            except (ValueError, TypeError):
+                # Use the custom message if provided, otherwise a default one
+                error_message = message or f"'{param_name}' must be an integer."
+                self.add_parameter_error(error_message, param_name)
+                return False
+        return True
+    
+    def ensure_positive_value(self, param_name, value):
+        """Ensure the provided parameter is a positive numeric; if not, log an error.
+
+        Args:
+            param_name (str): The name of the parameter to check.
+            value (any): The value to validate as a positive numeric.
+
+        Returns:
+            bool: False if the value is zero or negative and an error is logged; True otherwise.
         """
         try:
             number = float(value)
@@ -153,7 +194,7 @@ class ApiRequestValidator:
                 self.add_parameter_error(f"'{param_name}' must be a positive number, received {value}.", param_name)
                 return False
         except (ValueError, TypeError):
-            self.add_parameter_error(f"'{param_name}' must be a string.", param_name)
+            self.add_parameter_error(f"'{param_name}' must be a float.", param_name)
             return False
     
     def ensure_base64_format(self, param_name, value):

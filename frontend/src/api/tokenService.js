@@ -12,9 +12,11 @@ export const getAccessToken = async () => {
     if (!token) {
         return null;
     }
+    console.log('getAccessToken token', token);
 
     const expiration = localStorage.getItem('accessTokenExpiry');
     if (isTokenExpired(expiration)) {
+        console.log('getAccessToken isTokenExpired', isTokenExpired);
         // If the token has expired, try to refresh it
         return await refreshAccessToken();
     }

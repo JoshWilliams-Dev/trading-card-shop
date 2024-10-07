@@ -1,42 +1,80 @@
 import React from 'react';
-import './Sidebar.css'; // Import the custom styles
+import useAuthDetection from '../hooks/useAuthDetection';
+import LoadingButton from '../components/LoadingButton';
+
 
 const Sidebar = () => {
+    const { isLoading, isUserLoggedIn } = useAuthDetection();
+
+    if (isLoading) {
+        return <LoadingButton />;
+    }
+
+
+    const renderAuthenticationButtons = () => {
+        if (isUserLoggedIn) {
+            return <li className="nav-item">
+                <a className="nav-link d-flex align-items-center gap-2" href="/logout">
+                    <svg className="bi"><use href="#door-closed"></use></svg>
+                    Sign out
+                </a>
+            </li>
+        }
+
+        return <>
+            <li className="nav-item">
+                <a className="nav-link d-flex align-items-center gap-2" href="/login">
+                    <svg className="bi"><use href="#door-open"></use></svg>
+                    Sign In
+                </a>
+            </li>
+            <li className="nav-item">
+                <a className="nav-link d-flex align-items-center gap-2" href="/register">
+                    <svg className="bi"><use href="#pencil"></use></svg>
+                    Register
+                </a>
+            </li>
+        </>
+    }
+
     return (
-
-        <div className="sidebar bg-secondary vh-100">
-
-            <div className="row justify-content-center py-3">
-                <div className="col-auto">
-                    <div className="text-center">
-                        <div className="d-inline-flex flex-column">
-                            <div className="fw-lighter fst-italic text-start text-danger">*Potential</div>
-                            <a href="#!">
-                                <img src="https://wp-avn.b-cdn.net/uploads/2022/12/main_logo.svg" alt="AVN Logo" width="175" height="57" />
+        <div className="sidebar border border-right col-md-3 col-lg-2 p-0 bg-body-tertiary">
+            <div className="offcanvas-md offcanvas-end bg-body-tertiary" tabIndex="-1" id="sidebarMenu" aria-labelledby="sidebarMenuLabel">
+                <div className="offcanvas-header">
+                    <h5 className="offcanvas-title" id="sidebarMenuLabel">Company name</h5>
+                    <button type="button" className="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#sidebarMenu" aria-label="Close"></button>
+                </div>
+                <div className="offcanvas-body d-md-flex flex-column p-0 pt-lg-3 overflow-y-auto">
+                    <ul className="nav flex-column">
+                        {isUserLoggedIn && <li className="nav-item">
+                            <a className="nav-link d-flex align-items-center gap-2" href="/cardsmith">
+                                <svg className="bi"><use href="#puzzle"></use></svg>
+                                Cardsmith
                             </a>
-                        </div>
-                        <h1 className="text-white">Trading Card Shop</h1>
-                    </div>
+                        </li>}
+                        {isUserLoggedIn && <li className="nav-item">
+                            <a className="nav-link d-flex align-items-center gap-2 active" aria-current="page" href="/inventory">
+                                <svg className="bi"><use href="#house-fill"></use></svg>
+                                Inventory
+                            </a>
+                        </li>}
+                        <li className="nav-item">
+                            <a className="nav-link d-flex align-items-center gap-2" href="/shop">
+                                <svg className="bi"><use href="#cart"></use></svg>
+                                Shop
+                            </a>
+                        </li>
+                    </ul>
+
+
+                    <hr className="my-3" />
+
+
+                    <ul className="nav flex-column mb-auto">
+                        {renderAuthenticationButtons()}
+                    </ul>
                 </div>
             </div>
-
-
-            <nav>
-                <ul className="nav flex-column">
-                    <li className="nav-item">
-                        <a href="/cardsmith" className="nav-link sidebar-link">Cardsmith</a>
-                    </li>
-                    <li className="nav-item">
-                        <a href="/cards" className="nav-link sidebar-link">My Cards</a>
-                    </li>
-                    <li className="nav-item">
-                        <a href="/shop" className="nav-link sidebar-link">Shop</a>
-                    </li>
-                    <li className="nav-item">
-                        <a href="/logout" className="nav-link sidebar-link">Logout</a>
-                    </li>
-                </ul>
-            </nav>
         </div>
     );
 };
