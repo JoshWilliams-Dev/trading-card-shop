@@ -1,15 +1,18 @@
 import React from 'react';
+import { NavLink } from 'react-router-dom';
 
 import LoadingButton from '../components/LoadingButton';
 import { useAuth } from '../contexts/AuthenticationContext';
 
+import './Sidebar.css';
+
 
 const Sidebar = () => {
     const { isUserLoggedIn, isLoading } = useAuth();
-    
+
 
     return (
-        <div className="sidebar border border-right col-md-3 col-lg-2 p-0 bg-body-tertiary">
+        <div className="sidebar border border-right col-md-3 col-lg-2 p-0 bg-body-tertiary position-fixed">
             <div className="offcanvas-md offcanvas-end bg-body-tertiary" tabIndex="-1" id="sidebarMenu" aria-labelledby="sidebarMenuLabel">
                 <div className="offcanvas-header">
                     <h5 className="offcanvas-title" id="sidebarMenuLabel">AVN Corporation</h5>
@@ -22,29 +25,41 @@ const Sidebar = () => {
                         </li>}
                         {!isLoading && <>
                             {isUserLoggedIn && <li className="nav-item">
-                                <a className="nav-link d-flex align-items-center gap-2" href="/cardsmith">
+                                <NavLink
+                                    to="/cardsmith"
+                                    className={({ isActive }) => isActive ? "nav-link d-flex align-items-center gap-2 active" : "nav-link d-flex align-items-center gap-2"}
+                                >
                                     <svg className="bi"><use href="#puzzle"></use></svg>
                                     Cardsmith
-                                </a>
+                                </NavLink>
                             </li>}
                             {isUserLoggedIn && <li className="nav-item">
-                                <a className="nav-link d-flex align-items-center gap-2 active" aria-current="page" href="/inventory">
+                                <NavLink
+                                    to="/inventory"
+                                    className={({ isActive }) => isActive ? "nav-link d-flex align-items-center gap-2 active" : "nav-link d-flex align-items-center gap-2"}
+                                >
                                     <svg className="bi"><use href="#house-fill"></use></svg>
                                     Inventory
-                                </a>
+                                </NavLink>
                             </li>}
                             <li className="nav-item">
-                                <a className="nav-link d-flex align-items-center gap-2" href="/shop">
+                                <NavLink
+                                    to="/shop"
+                                    className={({ isActive }) => isActive ? "nav-link d-flex align-items-center gap-2 active" : "nav-link d-flex align-items-center gap-2"}
+                                >
                                     <svg className="bi"><use href="#cart"></use></svg>
                                     Shop
-                                </a>
+                                </NavLink>
                             </li>
                             {isUserLoggedIn && <li><hr className="my-3" /></li>}
                             {isUserLoggedIn && <li className="nav-item">
-                                <a className="nav-link d-flex align-items-center gap-2" href="/cart">
+                                <NavLink
+                                    to="/cart"
+                                    className={({ isActive }) => isActive ? "nav-link d-flex align-items-center gap-2 active" : "nav-link d-flex align-items-center gap-2"}
+                                >
                                     <svg className="bi"><use href="#cart"></use></svg>
                                     Cart
-                                </a>
+                                </NavLink>
                             </li>}
                         </>}
                     </ul>
@@ -53,23 +68,32 @@ const Sidebar = () => {
                         <hr className="my-3" />
                         <ul className="nav flex-column mb-auto">
                             {isUserLoggedIn && <li className="nav-item">
-                                <a className="nav-link d-flex align-items-center gap-2" href="/logout">
+                                <NavLink
+                                    to="/logout"
+                                    className={({ isActive }) => isActive ? "nav-link d-flex align-items-center gap-2 active" : "nav-link d-flex align-items-center gap-2"}
+                                >
                                     <svg className="bi"><use href="#door-closed"></use></svg>
                                     Sign out
-                                </a>
+                                </NavLink>
                             </li>}
                             {!isUserLoggedIn && <>
                                 <li className="nav-item">
-                                    <a className="nav-link d-flex align-items-center gap-2" href="/login">
+                                    <NavLink
+                                        to="/login"
+                                        className={({ isActive }) => isActive ? "nav-link d-flex align-items-center gap-2 active" : "nav-link d-flex align-items-center gap-2"}
+                                    >
                                         <svg className="bi"><use href="#door-open"></use></svg>
                                         Sign In
-                                    </a>
+                                    </NavLink>
                                 </li>
                                 <li className="nav-item">
-                                    <a className="nav-link d-flex align-items-center gap-2" href="/register">
+                                    <NavLink
+                                        to="/register"
+                                        className={({ isActive }) => isActive ? "nav-link d-flex align-items-center gap-2 active" : "nav-link d-flex align-items-center gap-2"}
+                                    >
                                         <svg className="bi"><use href="#pencil"></use></svg>
                                         Register
-                                    </a>
+                                    </NavLink>
                                 </li>
                             </>}
                         </ul>
