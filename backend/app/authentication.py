@@ -66,6 +66,8 @@ def token_required(f):
         # Skip token verification for OPTIONS requests
         if request.method == 'OPTIONS':
             return jsonify({'message': 'OK'}), 200
+        
+        validator = ApiRequestValidator()
 
         token = request.headers.get('Authorization')
         if token and token.startswith('Bearer '):
@@ -79,10 +81,14 @@ def token_required(f):
                     # Pass the user to the decorated function
                     return f(user, *args, **kwargs)
             except jwt.ExpiredSignatureError:
-                return jsonify({'message': 'Token expired'}), 401
+                validator.add_invalid_credentials_error("Token expired.")
+                return jsonify(validator.get_error_object()), 401
             except jwt.InvalidTokenError:
-                return jsonify({'message': 'Invalid token'}), 401
-        return jsonify({'message': 'Token required'}), 403
+                validator.add_invalid_credentials_error("Token invalid.")
+                return jsonify(validator.get_error_object()), 401
+            
+        validator.add_invalid_credentials_error("Token required.")
+        return jsonify(validator.get_error_object()), 403
     return wrapper
 
 
@@ -108,7 +114,6 @@ def register():
     data = request.get_json()
 
     # Validate parameters
-    errors = []
     validator = ApiRequestValidator()
 
 
@@ -158,7 +163,6 @@ def authenticate():
     data = request.get_json()
 
     # Validate parameters
-    errors = []
     validator = ApiRequestValidator()
 
     areCredentialsInvalid = False
@@ -194,7 +198,6 @@ def refresh_token():
     data = request.get_json()
 
     # Validate parameters
-    errors = []
     validator = ApiRequestValidator()
 
     refresh_token = data.get('refresh_token')

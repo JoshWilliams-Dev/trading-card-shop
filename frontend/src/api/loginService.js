@@ -34,7 +34,7 @@ export const logout = async () => {
             if (!response.ok && response.status !== 401) {
                 const data = await response.json();
 
-                console.log('data', data);
+                console.warn('Logout processed unexpectedly:', data);
             }
         }
 
@@ -58,6 +58,7 @@ export const isLoggedIn = async() => {
         // Check if the access token exists
         if (accessToken !== null) {
             return true; // User is logged in
+
         }
         
         return false; // User is not logged in

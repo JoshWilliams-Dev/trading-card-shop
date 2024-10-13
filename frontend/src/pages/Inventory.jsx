@@ -10,7 +10,7 @@ const Inventory = () => {
                     <p>Here you'll find the stash of cards you've been squirrelling away.</p>
                 </div>
             </div>
-            <CardCollection filterByLoggedInUser={true} />
+            <CardCollection filterByLoggedInUser={true} cartEnabled={false} />
         </Layout>
     );
 };

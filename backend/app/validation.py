@@ -121,7 +121,7 @@ class ApiRequestValidator:
 
         Args:
             param (str): The name of the parameter that caused the error.
-            expected_file_types (set[str]): A descriptive error message.
+            expected_file_types (set[str]): A set of strings listing the expected file types.
         """
         message = f"The file format for '{param_name}' is unknown."
 
@@ -131,6 +131,21 @@ class ApiRequestValidator:
 
         error = InvalidFileFormatError(message, param_name)
         self.errors.append(error)
+
+
+    def add_invalid_json_data(self, param_name, message=None):
+        """Add an invalid JSON format error to the error list.
+
+        Args:
+            param (str): The name of the parameter that caused the error.
+            message (str): A descriptive error message.
+        """
+        if message is None:
+            message = f"The data provided is not properly formatted JSON."
+
+        error = InvalidJsonFormatError(message, param_name)
+        self.errors.append(error)
+
 
 
 

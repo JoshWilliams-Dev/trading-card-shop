@@ -121,3 +121,11 @@ class CartItem(db.Model):
 
     user = db.relationship('User', backref='cart_items', lazy=True)
     card = db.relationship('Card', backref='cart_items', lazy=True)
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'user_id': self.user_id,
+            'card_id': self.card_id,
+            'quantity': self.quantity
+        }

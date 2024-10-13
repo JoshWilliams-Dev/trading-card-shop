@@ -1,66 +1,79 @@
-import React, { useEffect } from 'react';
-import { getCart, updateCartItem, removeCartItem } from '../api/api';
-import { useToast } from '../contexts/ToastContext';
+import React from 'react';
 import { useCart } from '../contexts/CartContext';
-
+import CartItem from '../components/CartItem';
 
 
 
 const Cart = () => {
-    const { state, dispatch } = useCart();
-    const showToast = useToast();
+    const { cartItems, isCartLoading, adjustCartQuantity, removeFromCart } = useCart();
+
+    if (isCartLoading) {
+        return <div>Loading your cart...</div>;
+    }
 
 
-    useEffect(() => {
-        const fetchCartItems = async () => {
-            try {
-                const response = await getCart();
-                response.data.forEach(item => {
-                    dispatch({ type: 'ADD_TO_CART', payload: item });
-                });
-            } catch (error) {
-                console.error('Error fetching cart:', error);
-            }
-        };
+    const itemCount = cartItems.length;
 
-        fetchCartItems();
-    }, [dispatch]);
+    let itemTotal = 0;
+    cartItems.forEach(cartItem => {
+        itemTotal = itemTotal + (cartItem.quantity * cartItem.card.price);
+    });
 
+    const estimatedShipping = 10.00;
 
+    const estimatedTaxes = itemTotal * 0.08;
 
-    const handleUpdateQuantity = async (itemId, quantity) => {
-        try {
-            const response = await updateCartItem(itemId, quantity);
-            dispatch({ type: 'UPDATE_CART', payload: { id: itemId, quantity } });
-            showToast(response.data.message)
-        } catch (error) {
-            console.error('Error updating quantity:', error);
-        }
-    };
+    const cartSubtotal = itemTotal + estimatedShipping + estimatedTaxes;
 
-    const handleRemoveFromCart = async (itemId) => {
-        try {
-            const response = await removeCartItem(itemId);
-            dispatch({ type: 'REMOVE_FROM_CART', payload: { id: itemId } });
-            showToast(response.data.message)
-        } catch (error) {
-            console.error('Error removing from cart:', error);
-        }
-    };
+    const usdNumberFormat = new Intl.NumberFormat(undefined, {
+        style: 'currency',
+        currency: 'USD',
+    });
+
+    const formattedItemTotal = usdNumberFormat.format(itemTotal);
+    const formattedEstimatedShipping = usdNumberFormat.format(estimatedShipping);
+    const formattedEstimatedTaxes = usdNumberFormat.format(estimatedTaxes);
+    const formattedCartSubtotal = usdNumberFormat.format(cartSubtotal);
 
     return (
-        <div>
-            <h2>Your Cart</h2>
-            <ul>
-                {state.cartItems.map(item => (
-                    <li key={item.id}>
-                        {item.card.description} - Quantity: {item.quantity}
-                        <button onClick={() => handleUpdateQuantity(item.id, item.quantity + 1)}>+</button>
-                        <button onClick={() => handleUpdateQuantity(item.id, item.quantity - 1)}>-</button>
-                        <button onClick={() => handleRemoveFromCart(item.id)}>Remove</button>
-                    </li>
+        <div className="row">
+            <div className="cart-items col-9">
+                {cartItems.map(cartItem => (
+                    <CartItem key={cartItem.id} item={cartItem} />
                 ))}
-            </ul>
+            </div>
+            <div className="col-3">
+                <div className="row">
+                    <div className="col-8 text-start">
+                        Items
+                    </div>
+                    <div className="col-4 text-end">{itemCount}</div>
+                </div>
+                <div className="row">
+                    <div className="col-8 text-start">
+                        Item Total
+                    </div>
+                    <div className="col-4 text-end">{formattedItemTotal}</div>
+                </div>
+                <div className="row">
+                    <div className="col-8 text-start">
+                        Estimated Shipping
+                    </div>
+                    <div className="col-4 text-end">{formattedEstimatedShipping}</div>
+                </div>
+                <div className="row">
+                    <div className="col-8 text-start">
+                        Estimated Taxes
+                    </div>
+                    <div className="col-4 text-end">{formattedEstimatedTaxes}</div>
+                </div>
+                <div className="row mt-3">
+                    <div className="col-8 text-start">
+                        Cart Subtotal
+                    </div>
+                    <div className="col-4 text-end">{formattedCartSubtotal}</div>
+                </div>
+            </div>
         </div>
     );
 };

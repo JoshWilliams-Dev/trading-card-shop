@@ -3,7 +3,9 @@ import React from 'react';
 const Navbar = () => {
     return (
         <header className="navbar sticky-top bg-dark flex-md-nowrap p-0 shadow" data-bs-theme="dark">
-            <a className="navbar-brand col-md-3 col-lg-2 me-0 px-3 fs-6 text-white" href="https://avncorp.com/">AVN Corporation</a>
+            <a className="navbar-brand col-md-3 col-lg-2 me-0 px-3 fs-6 text-white" href="https://avncorp.com/">
+                <img src="https://wp-avn.b-cdn.net/uploads/2022/12/main_logo.svg" alt="AVN Logo" width="175" height="57"></img>
+            </a>
 
             <ul className="navbar-nav flex-row d-md-none">
                 <li className="nav-item text-nowrap">

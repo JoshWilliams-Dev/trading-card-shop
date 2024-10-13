@@ -12,11 +12,9 @@ export const getAccessToken = async () => {
     if (!token) {
         return null;
     }
-    console.log('getAccessToken token', token);
 
     const expiration = localStorage.getItem('accessTokenExpiry');
     if (isTokenExpired(expiration)) {
-        console.log('getAccessToken isTokenExpired', isTokenExpired);
         // If the token has expired, try to refresh it
         return await refreshAccessToken();
     }
@@ -32,10 +30,7 @@ export const refreshAccessToken = async () => {
     const refresh_token = localStorage.getItem('refreshToken');
     const refresh_token_expiration = localStorage.getItem('refreshTokenExpiry');
     if (!refresh_token || !refresh_token_expiration || isTokenExpired(refresh_token_expiration)) {
-        // If the token has expired or doesn't exist, redirect to login
-        console.error('Refresh token has expired.');
-        const LOGIN_URL = '/login';
-        window.location.href = LOGIN_URL;
+        // TODO If the token has expired or doesn't exist, should the user be redirected to the login page?
         return null;
     }
 
@@ -65,8 +60,6 @@ export const refreshAccessToken = async () => {
             // Return new access token
             return data.access_token;
         } else {
-            console.log(response);
-            console.log(await response.json());
             console.error('Failed to refresh access token');
             return null;
         }

@@ -52,11 +52,6 @@ const Register = () => {
             errorMap["password"] = [passwordError];
         }
 
-        if (Object.keys(errorMap).length > 0) {
-            setErrors(errorMap);
-            return;
-        }
-
         const backendUrl = process.env.REACT_APP_BACKEND_URL;
 
         try {
@@ -107,12 +102,6 @@ const Register = () => {
                         <div className="col-12 col-md-11 col-lg-8 col-xl-7 col-xxl-6">
                             <div className="bg-secondary bg-gradient p-4 p-md-5 rounded shadow-sm">
                                 <div className="text-center">
-                                    <div className="d-inline-flex flex-column">
-                                        <div className="fw-lighter fst-italic text-start text-danger" style={{ "fontSize": "x-small" }}>*Potential</div>
-                                        <a href="#!">
-                                            <img src="https://wp-avn.b-cdn.net/uploads/2022/12/main_logo.svg" alt="AVN Logo" width="175" height="57" />
-                                        </a>
-                                    </div>
                                     <h1>Trading Card Shop</h1>
                                 </div>
                                 <div className='row my-3'>

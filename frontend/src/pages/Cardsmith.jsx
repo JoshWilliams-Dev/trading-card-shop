@@ -59,9 +59,7 @@ const Cardsmith = () => {
                 showToast('The card has been added to your collection.');
             }
             else {
-                console.log(response);
                 const data = await response.json();
-                console.log(data);
 
                 data.errors.forEach(error => {
                     if (!errorMap[error.param]) {
@@ -73,7 +71,7 @@ const Cardsmith = () => {
             }
 
         } catch (error) {
-            console.log(error);
+            console.log('Creating the card went unexpectedly.', error);
 
             errorMap.global.push(error.message);
         }

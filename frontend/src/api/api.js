@@ -167,15 +167,6 @@ export const getCards = async (pageIndex, pageSize, filterByLoggedInUser) => {
 
 
 
-export const addToCart = async (cardId, quantity) => {
-
-    const response = await postJsonData('/cart', { card_id: cardId, quantity: quantity }, false);
-
-    return response;
-};
-
-
-
 export const getCart = async () => {
 
     let endpoint = "/cart";
@@ -186,25 +177,11 @@ export const getCart = async () => {
 
 
 
-export const updateCartItem = async (itemId, quantity) => {
+export const addCartItem = async (cardId, quantity) => {
 
-    let headers = {
-        'Content-Type': 'application/json'
-    };
+    const response = await postJsonData('/cart', { card_id: cardId, quantity: quantity }, true);
 
-
-    let body = { quantity: quantity };
-
-    let request_options = {
-        method: 'PUT',
-        body: JSON.stringify(body),
-        headers: headers
-    };
-
-    let endpoint = `/cart/${itemId}`
-    let requiresAuthentication = true;
-
-    return await makeRequest(endpoint, request_options, requiresAuthentication);
+    return response;
 };
 
 

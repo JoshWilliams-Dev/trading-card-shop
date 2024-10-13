@@ -93,7 +93,6 @@ def uploaded_file(filepath):
 def create_card(user):
 
     # Validate parameters
-    errors = []
     validator = ApiRequestValidator()
     file = None
     
@@ -225,11 +224,18 @@ def get_paginated_cards(page_index, page_size, user_id=None):
 
 
 
-@main_blueprint.route('/cart', methods=['GET'])
+@main_blueprint.route('/cart', methods=['GET', 'POST'])
 @token_required
+def cart(user):
+    if request.method == 'GET':
+        return get_cart(user)
+    elif request.method == 'POST':
+        return add_to_cart(user)
+
+
+
 def get_cart(user):
     cart_items = CartItem.query.filter_by(user_id=user.id).all()
-    args = request.args
 
     return jsonify([{
         'id': item.id,
@@ -240,24 +246,60 @@ def get_cart(user):
 
 
 
-@main_blueprint.route('/cart', methods=['POST'])
-@token_required
 def add_to_cart(user):
-    data = request.get_json()
+    validator = ApiRequestValidator()
+
+    data = request.get_json(False, True, True)
+    if data is None:
+        validator.add_invalid_json_data("request.body", "The data provided is not properly formatted JSON.")
+        return jsonify(validator.get_error_object()), 400
+    
 
     card_id = data.get('card_id')
-    quantity = data.get('quantity', 1)
+    if validator.ensure_value_provided ('card_id', card_id) and validator.ensure_is_int('card_id', card_id):
+        validator.ensure_positive_value('card_id', card_id)
+
+    quantity = data.get('quantity')
+    validator.ensure_value_provided ('quantity', quantity)
+    validator.ensure_is_int('quantity', quantity)
+    # validator.ensure_positive_value('quantity', quantity)
+
+    if validator.get_error_count() > 0:
+        return jsonify(validator.get_error_object()), 400
+    
+    responseCode = None
+    responseObject = None
 
     existing_item = CartItem.query.filter_by(user_id=user.id, card_id=card_id).first()
     if existing_item:
         existing_item.quantity += quantity
+        responseCode = 200
+        responseObject = {
+            'id': existing_item.id,
+            'card_id': existing_item.card_id,
+            'quantity': existing_item.quantity,
+            'card': existing_item.card.to_api_dict()
+        }
+        if existing_item.quantity < 1:
+            db.session.delete(existing_item)
+            responseCode = 204
+            responseObject = {}
+
         db.session.commit()
-        return jsonify({'message': 'Updated quantity in cart'}), 200
     else:
         new_item = CartItem(user_id=user.id, card_id=card_id, quantity=quantity)
         db.session.add(new_item)
         db.session.commit()
-        return jsonify({'message': 'Added to cart'}), 201
+        
+        responseCode = 201
+        responseObject = {
+            'id': new_item.id,
+            'card_id': new_item.card_id,
+            'quantity': new_item.quantity,
+            'card': new_item.card.to_api_dict()
+        }
+    
+    return jsonify(responseObject), responseCode
     
 
 

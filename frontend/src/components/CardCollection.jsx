@@ -5,8 +5,9 @@ import './CardCollection.css';
 
 import { getCards } from '../api/api';
 import LoadingButton from './LoadingButton';
+import Alert from './Alert';
 
-const CardCollection = ({ filterByLoggedInUser = false }) => {
+const CardCollection = ({ filterByLoggedInUser, cartEnabled }) => {
     const [cards, setCards] = useState([]);
     const [pageIndex, setPageIndex] = useState(1);
     const [pageSize, setPageSize] = useState(12);
@@ -26,7 +27,18 @@ const CardCollection = ({ filterByLoggedInUser = false }) => {
                 if (!response.ok) {
                     throw new Error('Failed to fetch cards');
                 }
-                const data = await response.json();
+
+                let data;
+                try {
+                    data = await response.json();
+                }
+                catch {
+                    data = {
+                        cards: [],
+                        total_pages: 1,
+                        total_cards: 0
+                    };
+                }
 
                 setCards(data.cards);
                 setTotalPages(data.total_pages);
@@ -53,10 +65,18 @@ const CardCollection = ({ filterByLoggedInUser = false }) => {
     };
 
     if (loading) {
-        return <LoadingButton/>
+        return <LoadingButton />
     }
     if (error) {
         return <div>Error: {error}</div>;
+    }
+
+    if (totalCards < 1) {
+        return <>
+            <div className="card-collection container">
+                <Alert messageText="You have not yet created or purchased any cards." />
+            </div>
+        </>
     }
 
     return (
@@ -81,7 +101,7 @@ const CardCollection = ({ filterByLoggedInUser = false }) => {
             {/* Display Card Items */}
             <div className="card-items">
                 {cards.map(card => (
-                    <CardItem key={card.id} card={card} />
+                    <CardItem key={card.id} card={card} cartEnabled={cartEnabled} />
                 ))}
             </div>
 

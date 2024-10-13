@@ -59,6 +59,8 @@ services:
     image: dpage/pgadmin4
     depends_on:
       - postgres-db
+    networks:
+      - app-network
     ports:
       - "5555:80"
     environment:

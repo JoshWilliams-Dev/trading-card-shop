@@ -82,3 +82,13 @@ class InvalidFileFormatError(ParameterError):
     def to_dict(self):
         error_dict = super().to_dict()
         return error_dict
+    
+
+
+class InvalidJsonFormatError(ParameterError):    
+    def __init__(self, message, param):
+        super().__init__(message=message, param=param, code=6)
+
+    def to_dict(self):
+        error_dict = super().to_dict()
+        return error_dict

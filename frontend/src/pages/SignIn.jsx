@@ -48,7 +48,7 @@ const SignIn = () => {
                 setPassword('');
             }
         } catch (err) {
-            console.log(err);
+            console.warn('Login did not process as expected', err);
 
             errorMap.global.push(err.message);
         }
@@ -69,12 +69,6 @@ const SignIn = () => {
                                 <div className="row">
                                     <div className="col-12">
                                         <div className="text-center">
-                                            <div className="d-inline-flex flex-column">
-                                                <div className="fw-lighter fst-italic text-start text-danger" style={{ "fontSize": "x-small" }}>*Potential</div>
-                                                <a href="#!">
-                                                    <img src="https://wp-avn.b-cdn.net/uploads/2022/12/main_logo.svg" alt="AVN Logo" width="175" height="57" />
-                                                </a>
-                                            </div>
                                             <h1>Trading Card Shop</h1>
                                         </div>
                                     </div>
